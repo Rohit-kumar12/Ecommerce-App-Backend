@@ -2,7 +2,7 @@ const JWT = require("jsonwebtoken");
 const userModel = require("../models/userModel");
 
 exports.requireSignIn = async (req, res, next) => {
-  if (!req.headers.authorization || !req.headers.Authorization)
+  if (!req.headers.authorization )
     return res.status(401).json({ message: "Unauthorised!" });
   try {
     const decode = JWT.verify(
