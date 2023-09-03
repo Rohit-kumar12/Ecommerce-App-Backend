@@ -44,7 +44,7 @@ exports.registerController = async (req, res) => {
     if (existingUser) {
       return res.status(200).send({
         success: false,
-        message: "Alredy Register Please login"
+        message: "Alredy Register Please login",
       });
     }
     //register user
@@ -100,7 +100,7 @@ exports.loginController = async (req, res) => {
     }
     //token
     const token = await JWT.sign({ _id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
+      expiresIn: "1d",
     });
     res.status(200).send({
       success: true,

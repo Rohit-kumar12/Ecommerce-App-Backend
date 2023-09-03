@@ -13,7 +13,7 @@ router.post("/login", authController.loginController);
 router.post("/forgot-password", authController.forgotpasswordController);
 //protected User route auth
 router.get("/user-auth", requireSignIn, (req, res) => {
-  res.status(200).send({ ok: true });
+  res.status(200).json({ ok: true });
 });
 //protected Admin route auth
 router.get("/admin-auth", requireSignIn, isAdmin, (req, res) => {
