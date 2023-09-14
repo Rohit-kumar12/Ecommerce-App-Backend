@@ -68,7 +68,7 @@ exports.registerController = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error in registration",
-      error,
+      error: error.message,
     });
   }
 };
@@ -119,7 +119,7 @@ exports.loginController = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error in login",
-      error,
+      error: error.message,
     });
   }
 };

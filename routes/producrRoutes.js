@@ -2,16 +2,35 @@ const express = require("express");
 
 const productController = require("../controllers/productController");
 const { requireSignIn, isAdmin } = require("../middlewares/authMiddleware");
-const formidable = require("express-formidable");
+const multer = require("multer");
+const fs = require("fs");
+const multermiddleware = require("../middlewares/multermiddleware");
 
 const router = express.Router();
+
+// const uploadDir = "./uploads";
+
+// // Create the "uploads" directory if it doesn't exist
+// if (!fs.existsSync(uploadDir)) {
+//   fs.mkdirSync(uploadDir);
+// }
+
+// const storage = multer.diskStorage({
+//   destination: "./uploads",
+//   filename: function (req, file, cb) {
+//     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+//     cb(null, file.fieldname + "-" + uniqueSuffix + "-" + file.originalname);
+//   },
+// });
+
+// const upload = multer({ storage: storage });
 
 //create_product
 router.post(
   "/create-product",
   requireSignIn,
   isAdmin,
-  formidable(),
+  multermiddleware,
   productController.create
 );
 
@@ -20,7 +39,6 @@ router.put(
   "/update-product/:pid",
   requireSignIn,
   isAdmin,
-  formidable(),
   productController.update
 );
 

@@ -4,6 +4,7 @@ const categoryModel = require("../models/categoryModel");
 const fs = require("fs");
 const braintree = require("braintree");
 const orderModel = require("../models/orderModel");
+const multer = require("multer");
 
 var gateway = new braintree.BraintreeGateway({
   environment: braintree.Environment.Sandbox,
@@ -12,61 +13,54 @@ var gateway = new braintree.BraintreeGateway({
   privateKey: process.env.BRAINTREE_PRIVATE_KEY,
 });
 
-//Create-Product
+// Create-Product route
 exports.create = async (req, res) => {
   try {
+    const url = req.protocol + "://" + req.get("host");
     const { name, slug, description, price, category, quantity, shipping } =
-      req.fields;
-    const { photo } = req.files;
+      req.body;
+    // const { file } = req;
 
-    //validations
-    if (!name) {
-      return res.status(500).send({
-        error: "Name is required",
-      });
-    }
-    if (!description) {
-      return res.status(500).send({
-        error: "Description is required",
-      });
-    }
-    if (!price) {
-      return res.status(500).send({
-        error: "Price is required",
-      });
-    }
-    if (!quantity) {
-      return res.status(500).send({
-        error: "Quantity is required",
-      });
-    }
-    if (!category) {
-      return res.status(500).send({
-        error: "Category is required",
-      });
-    }
-    if (!photo || photo.size > 1000000) {
-      return res.status(500).send({
-        error: "Photo is required and should be less that 1mb",
-      });
-    }
+    // Validations
+    // if (!name || !description || !price || !quantity || !category || !file) {
+    //   return res.status(500).send({
+    //     error: "All fields and photo are required",
+    //   });
+    // }
 
-    const products = new productModel({ ...req.fields, slug: slugify(name) });
-    if (photo) {
-      products.photo.data = fs.readFileSync(photo.path);
-      products.photo.contentType = photo.type;
-    }
+    // if (file.size > 1000000) {
+    //   return res.status(500).send({
+    //     error: "Photo should be less than 1mb",
+    //   });
+    // }
+    // const images = req.file;
+    // console.log(images);
+
+    const products = new productModel({
+      name,
+      slug: slugify(name),
+      description,
+      price,
+      category,
+      quantity,
+      shipping,
+      photo: url + "/images/" + req.file.filename,
+    });
+
     await products.save();
-    res.status(201).send({
+
+    return res.status(201).send({
       success: true,
-      message: "Products create successfully",
-      products,
+      message: "Product created successfully",
+      product: products,
     });
   } catch (error) {
-    console.log(error);
-    res
-      .status(500)
-      .send({ success: false, message: "Error in creating product", error });
+    console.error(error);
+    return res.status(500).send({
+      success: false,
+      message: "Error in creating product",
+      error: error.message,
+    });
   }
 };
 
@@ -76,7 +70,6 @@ exports.get = async (req, res) => {
     const products = await productModel
       .find({})
       .populate("category")
-      .select("-photo")
       .limit(12)
       .sort({ createdAt: -1 });
     res.status(200).send({
@@ -100,7 +93,6 @@ exports.getSingle = async (req, res) => {
   try {
     const product = await productModel
       .findOne({ slug: req.params.slug })
-      .select("-photo")
       .populate("category");
     res.status(200).send({
       success: true,
@@ -138,7 +130,7 @@ exports.getPhoto = async (req, res) => {
 //delete_product
 exports.delete = async (req, res) => {
   try {
-    await productModel.findByIdAndDelete(req.params.pid).select("-photo");
+    await productModel.findByIdAndDelete(req.params.pid);
     res.status(200).send({
       success: true,
       message: "Product Deleted successfully",
@@ -249,7 +241,6 @@ exports.countPerPage = async (req, res) => {
     const page = req.params.page ? req.params.page : 1;
     const products = await productModel
       .find({})
-      .select("-photo")
       .skip((page - 1) * perPage)
       .limit(perPage)
       .sort({ createdAt: -1 });
@@ -299,7 +290,6 @@ exports.similar = async (req, res) => {
         category: cid,
         _id: { $ne: pid },
       })
-      .select("-photo")
       .limit(3)
       .populate("category");
     res.status(200).send({
