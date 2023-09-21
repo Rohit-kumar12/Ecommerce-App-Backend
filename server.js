@@ -28,11 +28,11 @@ app.use("/api/v1/product", productRoute);
 //rest api
 app.get("/", (req, res) => {
   res.send({
-    message: "Welcome to ecommerce app",
+    message: "Welcome to my ecommerce app",
   });
 });
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => {
   console.log(`server is runnimg on ${PORT}`);
